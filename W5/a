@@ -1,0 +1,17 @@
+1 root:x:0:root
+3 adm:x:999:daemon
+4 wheel:x:998:alex
+6 audio:x:996:alex
+8 input:x:994:alex
+10 kvm:x:992:libvirt-qemu,qemu
+11 lp:x:991:cups,alex
+15 storage:x:987:alex
+19 users:x:984:alex
+20 sys:x:3:bin
+29 network:x:90:alex
+32 power:x:98:alex
+37 bin:x:1:daemon
+38 daemon:x:2:bin
+74 autologin:x:1000:alex
+78 docker:x:954:alex
+79 test:x:12:ben
