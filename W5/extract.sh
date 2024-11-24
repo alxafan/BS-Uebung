@@ -11,7 +11,7 @@ if [ $# -eq 0 ]; then
 elif [ $# -eq 1 -a -f $1 ]; then
 	while IFS= read -r line; do
 		i=`expr $i + 1`
-		if [ "-n `echo $line | cut -d: f4`" ]; then
+		if [ -n "`echo $line | cut -d: -f4`" ]; then 
 			echo "$i $line"
 		fi
 	done < $1
