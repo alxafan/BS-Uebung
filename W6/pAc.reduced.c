@@ -27,23 +27,16 @@ int main() {
 
       // CHILD PROCESS
       case 0:
-        // close unused ends
-        close(p2c[1]);
-        close(c2p[0]);
+        char p2c_str[20], c2p_str[20], bsize_str[20], i_str[20], nbytes_str[20];
+        sprintf(p2c_str, "%d,%d", p2c[0], p2c[1]);
+        sprintf(c2p_str, "%d,%d", c2p[0], c2p[1]);
+        sprintf(bsize_str, "%d", BSIZE);
+        sprintf(i_str, "%d", i);
+        sprintf(nbytes_str, "%zd", nbytes);
 
-        childloop:
-        nbytes = read(p2c[0], buf, BSIZE);
-        printf("Child: %d\n", *(int *)buf);
-        i = *(int *)buf;
-        if (i < 0) {
-          exit(EXIT_SUCCESS);
-        }
-        else {
-          i = i * 2;
-          write(c2p[1], &i, sizeof(int));
-          goto childloop;
-        }
-
+        execl("./child", "child", p2c_str, c2p_str, bsize_str, buf, nbytes_str, i_str, NULL);
+        perror("execl");
+        exit(EXIT_FAILURE);
       // PARENT PROCESS
       default:
         // close unused ends
