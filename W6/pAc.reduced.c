@@ -9,7 +9,6 @@ int main() {
   const int BSIZE = 100;
   char buf[BSIZE];
   int i;
-  ssize_t nbytes;
 
     if (pipe(p2c) == -1 ) {
       perror("p2c pipe");
@@ -27,14 +26,12 @@ int main() {
 
       // CHILD PROCESS
       case 0:
-        char p2c_str[20], c2p_str[20], bsize_str[20], i_str[20], nbytes_str[20];
+        char p2c_str[20], c2p_str[20], bsize_str[20];
         sprintf(p2c_str, "%d,%d", p2c[0], p2c[1]);
         sprintf(c2p_str, "%d,%d", c2p[0], c2p[1]);
         sprintf(bsize_str, "%d", BSIZE);
-        sprintf(i_str, "%d", i);
-        sprintf(nbytes_str, "%zd", nbytes);
 
-        execl("./child", "child", p2c_str, c2p_str, bsize_str, buf, nbytes_str, i_str, NULL);
+        execl("./child", "child", p2c_str, c2p_str, bsize_str, NULL);
         perror("execl");
         exit(EXIT_FAILURE);
       // PARENT PROCESS
@@ -48,7 +45,7 @@ int main() {
         i = i + 3;
         i = i * i;
         write(p2c[1], &i, sizeof(int));
-        nbytes = read(c2p[0], buf, BSIZE);
+        read(c2p[0], buf, BSIZE);
         printf("Parent: %d\n", *(int *)buf);
         i = *(int *)buf;
         if (i < 1000) {

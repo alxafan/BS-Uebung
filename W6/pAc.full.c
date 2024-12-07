@@ -9,7 +9,6 @@ int main() {
   const int BSIZE = 100;
   char buf[BSIZE];
   int i;
-  ssize_t nbytes;
 
     if (pipe(p2c) == -1 ) {
       perror("p2c pipe");
@@ -32,7 +31,7 @@ int main() {
         close(c2p[0]);
 
         childloop:
-        nbytes = read(p2c[0], buf, BSIZE);
+        read(p2c[0], buf, BSIZE);
         printf("Child: %d\n", *(int *)buf);
         i = *(int *)buf;
         if (i < 0) {
@@ -57,7 +56,7 @@ int main() {
         i = i + 3;
         i = i * i;
         write(p2c[1], &i, sizeof(int));
-        nbytes = read(c2p[0], buf, BSIZE);
+        read(c2p[0], buf, BSIZE);
         printf("Parent: %d\n", *(int *)buf);
         i = *(int *)buf;
         if (i < 1000) {
