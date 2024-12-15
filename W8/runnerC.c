@@ -16,7 +16,6 @@ typedef struct linkedList {
 linkedList_T *head = NULL;
 linkedList_T *tail = NULL;
 
-// Add a process to the linked list
 void procAdd(pid_t pid, char *command) {
     linkedList_T *new_node = malloc(sizeof(linkedList_T));
     if (new_node == NULL) {
@@ -37,7 +36,6 @@ void procAdd(pid_t pid, char *command) {
     }
 }
 
-// Show all active processes
 void procShow() {
     linkedList_T *current = head;
 
@@ -58,14 +56,13 @@ void procShow() {
     printf("-----------------------------------\n> ");
 }
 
-// Delete a process from the linked list
 void procDel(pid_t pid) {
     linkedList_T *current = head;
     linkedList_T *prev = NULL;
 
     // No active processes
     if (current == NULL) {
-        printf("No active processes.\n> ");
+        printf("No active processes.\n");
         return;
     }
 
@@ -76,6 +73,7 @@ void procDel(pid_t pid) {
             tail = NULL;
         }
         free(current);
+        printf("Process with PID %d was deleted from list.\n", pid);
         return;
     }
 
@@ -86,7 +84,7 @@ void procDel(pid_t pid) {
     }
 
     if (current == NULL) {
-        printf("Process with PID %d not found.\n> ", pid);
+        printf("Process with PID %d not found.\n", pid);
         return;
     }
 
@@ -96,14 +94,13 @@ void procDel(pid_t pid) {
     }
 
     free(current);
+    printf("Process with PID %d was deleted from list.\n", pid);
 }
 
 int main() {
     const char *path_env = getenv("PATH");
     char input[MAX_SIZE];
 
-    int num_of_child_processes = 0;
-    pid_t child_pids[MAX_SIZE];
     
     printf("> ");
     while (fgets(input, MAX_SIZE, stdin)) {
@@ -128,19 +125,37 @@ int main() {
 
         if (strcmp(command, "exit") == 0) {
             printf("Terminating all child processes...\n");
+            linkedList_T *current = head;
 
-            for (int i = 0; i < num_of_child_processes; i++) {
-                printf("Sent termination signal to child process %d\n", child_pids[i]);   
-                kill(child_pids[i], SIGTERM);
+            while (current != NULL) {
+                pid_t pid = current->pid;
+                printf("Sent termination signal to child process %d\n", pid);   
+                kill(pid, SIGTERM);
 
                 sleep(2);
                 
-                if (kill(child_pids[i], 0) == 0) {
-                    printf("Child process %d is still running, sending kill signal.\n", child_pids[i]);
-                    kill(child_pids[i], SIGKILL);
+                 // We assume "minimal T = 2s" is a typo and what is meant is "maximal"
+                int status;
+                pid_t result = waitpid(pid, &status, WNOHANG);
+                if (result == 0) {
+                    printf("Child process %d is still running, sending kill signal.\n", pid);
+                    kill(pid, SIGKILL);
+                    waitpid(pid, &status, 0); // Wait for the process to terminate
+                } else if (result == -1) {
+                    perror("waitpid");
                 } else {
-                    printf("Child process %d was terminated.\n", child_pids[i]);
+                    printf("Child process %d was terminated.\n", pid);
                 }
+                // In the case of "minimal" we would instead to something like this:
+                
+                // waitpid(child_pids[i], &status, 0);
+                // if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+                //     printf("Child \"%d\" has exited successfully.\n", child_pids[i]);
+                // } else {
+                //     fprintf(stderr, "Error: Child \"%d\" has exited unsuccessfully.\n", child_pids[i]);
+                // }
+                current = current->next;
+                procDel(pid);
             }
 
             printf("All child processes were terminated.\n");
@@ -207,20 +222,7 @@ int main() {
                 // Parent process
                 default:
                     // Store the PIDs of the child processes
-                    child_pids[num_of_child_processes++] = pid;
                     procAdd(pid, original_input);
-
-                    // Wait for the child process to finish
-                    int status;
-                    waitpid(pid, &status, 0);
-                    procDel(pid);
-
-                    // Command was executed successfully
-                    if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-                        printf("Command \"%s\" was executed successfully.\n", command);
-                    } else {
-                        fprintf(stderr, "Error: Command \"%s\" failed.\n", command);
-                    }
             }
         }
 
