@@ -1,0 +1,18 @@
+@startuml
+hide empty description
+[*] --> Initialisierung : ./server [shm-obj name]
+Initialisierung --> Warten_auf_Antwort
+Initialisierung --> [*] : shm-obj existiert oder Anpassen der Größe geht schief
+Eingabe_lesen --> Program_beenden : EOF
+Program_beenden --> [*]
+Eingabe_lesen --> Nachricht_senden : Nutzereingabe
+Nachricht_senden --> Warten_auf_Antwort : orator auf 2 setzen
+Warten_auf_Antwort --> Antwort_anzeigen : orator == 1
+Antwort_anzeigen --> Eingabe_lesen
+
+Initialisierung : Prüfen ob shm-obj existiert
+Initialisierung : shm-obj erzeugen
+Initialisierung : Speicher: Größe anpassen und mappen
+Nachricht_senden: (In shm-obj schreiben)
+Program_beenden: shm-obj unmappen und entlinken
+@enduml
