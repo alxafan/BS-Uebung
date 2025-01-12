@@ -5,7 +5,7 @@
 
 // using gen- and showMsg to communicate termination. Could also be done with a single mutex,
 // but this would require locking and unlocking each cycle
-static int min, max, genMsg, showMsg;
+static int min, max, genMsg = 0, showMsg = 0;
 // Only using one mutex, because the printing process needs both, which leads to deadlocks when using one mutex per variable
 pthread_mutex_t rw_mutex=PTHREAD_MUTEX_INITIALIZER;
 
@@ -18,6 +18,7 @@ static void *generateAndDetermine(void *arg) {
     max = (x > max) ? x : max;
     pthread_mutex_unlock(&rw_mutex);
   }
+    return NULL;
 }
 
 static void *showActualResults(void *arg) {
@@ -27,6 +28,7 @@ static void *showActualResults(void *arg) {
     printf("[%d, %d], %d, %d\n", 0, RAND_MAX, min, max);
     pthread_mutex_unlock(&rw_mutex);
   }
+  return NULL;
 }
 
 int main() {
@@ -54,6 +56,7 @@ int main() {
   pthread_join(genThread, NULL);
   pthread_join(showThread, NULL);
 
+  pthread_mutex_destroy(&rw_mutex);
   return EXIT_SUCCESS;
 
 }
